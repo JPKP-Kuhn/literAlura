@@ -1,13 +1,17 @@
 package com.desafios.literAlura.literAlura.principal;
 
+import com.desafios.literAlura.literAlura.model.*;
 import com.desafios.literAlura.literAlura.service.ConsumoApi;
+import com.desafios.literAlura.literAlura.service.ConverteDados;
 
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner scanner = new Scanner(System.in);
     private ConsumoApi consumo = new ConsumoApi();
     private final String ENDERECO = "https://gutendex.com/books/?search=";
+    private ConverteDados converteDados = new ConverteDados();
 
 
     public void exibeMenu(){
@@ -57,6 +61,21 @@ public class Principal {
         var titulo = scanner.nextLine();
         var json = consumo.obterDados(ENDERECO + titulo.replace(" ", "%20"));
         System.out.println(json);
+
+        ApiResponse dados = converteDados.obterDados(json, ApiResponse.class);
+
+        if (dados.results() == null || dados.results().isEmpty()){
+            System.out.println("Nenhum livro encontrado");
+            return;
+        }
+        for (DadosLivro livro : dados.results()) {
+            System.out.println("------------------------");
+            System.out.println("Título: " + livro.titulo());
+            System.out.println("Autor: " + livro.autores().stream().map(DadosAutor::nome).collect(Collectors.joining(", ")));
+            System.out.println("Idioma: " + livro.idiomas().get(0));
+            System.out.println("Número de downloads: " + livro.numeroDownloads());
+            System.out.println("------------------------");
+        }
     }
     public void listarLivrosRegistrados(){}
     public void listarAutoresRegistrados(){}
